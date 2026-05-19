@@ -1,21 +1,18 @@
 """
-Vista de línea de comandos para interactuar con el generador de recetas.
+Interfaz de línea de comandos para el generador de recetas.
 """
 
 import sys
 import os
 
-# Agregar el directorio raíz al path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from src.controller.main_controller import RecipeController
 
 def clear_screen():
-    """Limpia la pantalla de la terminal."""
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def print_banner():
-    """Imprime el banner del programa."""
     print("="*60)
     print("🍳🍳🍳   RECIPE GEN AI - Generador de Recetas   🍳🍳🍳")
     print("="*60)
@@ -25,17 +22,13 @@ def print_banner():
     print()
 
 def run_cli():
-    """
-    Ejecuta la interfaz de línea de comandos.
-    """
     clear_screen()
     print_banner()
     
-    # Inicializar controlador
-    print("🔄 Cargando el modelo de IA... (esto puede tomar unos segundos)")
+    print("🔄 Cargando el modelo de IA...\n")
     controller = RecipeController()
     
-    if controller.model is None:
+    if not controller.model_loaded:
         print("\n❌ No se pudo cargar el modelo.")
         print("   Asegúrate de haber ejecutado primero el entrenamiento:")
         print("   python -m src.model.train")
@@ -46,7 +39,7 @@ def run_cli():
     while True:
         print("-"*60)
         print("🍽️ ¿Qué ingredientes tienes?")
-        print("   (Ejemplo: huevos, queso, jamón, pan)")
+        print("   (Ejemplo: huevos, queso, jamon, pan)")
         print("   (Escribe 'salir' para terminar)")
         print("-"*60)
         
@@ -60,15 +53,14 @@ def run_cli():
             print("⚠️ Por favor, ingresa al menos un ingrediente.")
             continue
         
-        print("\n🤖 La IA está pensando en una receta... (puede tomar unos segundos)")
+        print("\n🤖 La IA está pensando en una receta...\n")
         print("-"*60)
         
         # Generar receta
         recipe = controller.generate_from_ingredients(user_input)
         
-        # Formatear y mostrar
-        formatted_recipe = controller.format_recipe(recipe)
-        print("\n" + formatted_recipe)
+        # Mostrar resultado
+        print("\n" + recipe)
         print("\n" + "="*60)
         print("💡 Nota: Las recetas son generadas por IA. ¡Usa tu criterio!")
         print("="*60)
