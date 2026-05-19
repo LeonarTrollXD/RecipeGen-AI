@@ -27,7 +27,7 @@ def iniciar_entrenamiento():
     modelo.fit(datos_entrada, datos_salida, epochs=5, batch_size=2)
     
     # 4. Guardamos el modelo entrenado para que la Vista/Controlador lo usen después
-    ruta_guardado = "models/saved_models/modelo_recetas.h5"
+    ruta_guardado = "models/saved_models/modelo_recetas.keras"
     modelo.save(ruta_guardado)
     print(f"\n¡Cerebro de la IA guardado exitosamente en: {ruta_guardado}!")
 
