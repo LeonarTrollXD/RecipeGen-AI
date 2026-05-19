@@ -7,8 +7,7 @@ def iniciar_entrenamiento():
     print("=== INICIANDO PROCESO DE ENTRENAMIENTO ===")
     
     # 1. Cargamos y preprocesamos los datos de prueba
-    ruta_datos = "data/raw/recetas_prueba.csv"
-    datos_entrada, tokenizer = cargar_y_preprocesar_datos(ruta_datos)
+    datos_entrada, tokenizer, textos_recetas = cargar_y_preprocesar_datos()
     
     # En un problema real de generación de texto, intentamos predecir la siguiente palabra.
     # Para esta prueba rápida, crearemos objetivos ficticios emparejados con la entrada.
