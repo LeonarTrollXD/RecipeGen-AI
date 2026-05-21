@@ -1,7 +1,7 @@
 import numpy as np
 # Importamos tus dos funciones previas
-from preprocess import cargar_y_preprocesar_datos
-from network import crear_modelo_recetas
+from src.model.preprocess import cargar_y_preprocesar_datos
+from src.model.network import crear_modelo_recetas
 
 def iniciar_entrenamiento():
     print("=== INICIANDO PROCESO DE ENTRENAMIENTO ===")
@@ -23,7 +23,7 @@ def iniciar_entrenamiento():
     # 3. Entrenamos el modelo (Bucle de entrenamiento)
     # Usamos pocas épocas (epochs) solo para verificar que corra sin errores
     print("\nEntrenando la red...")
-    modelo.fit(datos_entrada, datos_salida, epochs=5, batch_size=2)
+    modelo.fit(datos_entrada, datos_salida, epochs=500, batch_size=2)
     
     # 4. Guardamos el modelo entrenado para que la Vista/Controlador lo usen después
     ruta_guardado = "models/saved_models/modelo_recetas.keras"
