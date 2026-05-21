@@ -31,7 +31,7 @@ async function getRecipe() {
     const ingredients = document.getElementById('ingredients').value.trim();
     
     if (!ingredients) {
-        showError('Por favor, ingresa algunos ingredientes 🥘');
+        showError('Por favor, ingresa algunos ingredientes');
         return;
     }
 
@@ -79,7 +79,7 @@ function mostrarResultado(data) {
     
     // Formatear porcentaje con color
     const matchBadge = document.getElementById('match-percentage');
-    matchBadge.textContent = `🎯 ${data.match_percentage}% coincidencia`;
+    matchBadge.textContent = `${data.match_percentage}% coincidencia`;
     
     // Cambiar color según porcentaje
     matchBadge.className = 'match-badge';
@@ -115,7 +115,7 @@ function mostrarResultado(data) {
 
 function showError(message) {
     const errorDiv = document.getElementById('error');
-    errorDiv.innerHTML = `⚠️ ${message}`;
+    errorDiv.innerHTML = `${message}`;
     errorDiv.style.display = 'block';
     errorDiv.style.animation = 'none';
     errorDiv.offsetHeight;
@@ -130,7 +130,7 @@ function showError(message) {
 function copiarReceta() {
     const receta = document.getElementById('instructions-text').innerText;
     navigator.clipboard.writeText(receta).then(() => {
-        alert('✅ Receta copiada al portapapeles');
+        alert('Receta copiada al portapapeles');
     });
 }
 
