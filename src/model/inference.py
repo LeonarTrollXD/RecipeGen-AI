@@ -1,20 +1,140 @@
-import numpy as np
+import pandas as pd
+
+from sklearn.feature_extraction.text import (
+    TfidfVectorizer
+)
+
+from sklearn.metrics.pairwise import (
+    cosine_similarity
+)
+
 from deep_translator import GoogleTranslator
 
-from src.model.preprocess import cargar_y_preprocesar_datos
 
+# =====================================================================
+# INICIALIZAR MOTOR VECTORIAL
+# =====================================================================
 
-def recomendar_receta_por_similitud(ingredientes_espanol):
+def inicializar_motor_vectorial():
     """
-    Traduce ingredientes del español al inglés,
-    busca la receta más compatible mediante
-    similitud del coseno y traduce el resultado
-    nuevamente al español.
+    Carga el dataset completo,
+    construye la matriz TF-IDF
+    y deja el motor listo para buscar recetas.
     """
     
-    # =================================================================
+    print(
+        "[Motor-IA] Cargando dataset de recetas..."
+    )
+    
+    # ================================================================
+    # 1. CARGAR CSV
+    # ================================================================
+    
+    ruta_csv = 'data/raw/recetas_ingles.csv'
+    
+    df = pd.read_csv(ruta_csv)
+    
+    # ================================================================
+    # 2. LIMPIEZA BÁSICA
+    # ================================================================
+    
+    df = df.dropna(
+        subset=[
+            'Cleaned_Ingredients',
+            'Instructions',
+            'Title'
+        ]
+    )
+    
+    df = df.drop_duplicates(
+        subset=['Cleaned_Ingredients']
+    )
+    
+    df = df.reset_index(drop=True)
+    
+    # ================================================================
+    # 3. CONVERTIR COLUMNAS A LISTAS
+    # ================================================================
+    
+    lista_ingredientes = (
+        df['Cleaned_Ingredients']
+        .astype(str)
+        .str.lower()
+        .tolist()
+    )
+    
+    lista_recetas = (
+        df['Instructions']
+        .astype(str)
+        .tolist()
+    )
+    
+    lista_titulos = (
+        df['Title']
+        .astype(str)
+        .tolist()
+    )
+    
+    # ================================================================
+    # 4. CONFIGURAR TF-IDF
+    # ================================================================
+    
+    # stop_words='english'
+    # elimina palabras inútiles:
+    # and, with, the, etc.
+    
+    vectorizador = TfidfVectorizer(
+        stop_words='english'
+    )
+    
+    # ================================================================
+    # 5. CREAR MATRIZ MATEMÁTICA
+    # ================================================================
+    
+    matriz_tfidf = vectorizador.fit_transform(
+        lista_ingredientes
+    )
+    
+    print(
+        "[Motor-IA] Matriz TF-IDF creada correctamente."
+    )
+    
+    print(
+        f"[Motor-IA] Total recetas cargadas: {len(lista_recetas)}"
+    )
+    
+    # ================================================================
+    # 6. RETORNAR MOTOR COMPLETO
+    # ================================================================
+    
+    return (
+        vectorizador,
+        matriz_tfidf,
+        lista_recetas,
+        lista_titulos
+    )
+
+
+# =====================================================================
+# BUSCADOR PRINCIPAL
+# =====================================================================
+
+def buscar_receta_optima(
+    ingredientes_usuario,
+    vectorizador,
+    matriz_tfidf,
+    lista_recetas,
+    lista_titulos
+):
+    """
+    Traduce ingredientes del usuario,
+    calcula similitud TF-IDF
+    y devuelve la receta más compatible.
+    """
+    
+    # ================================================================
     # 1. INICIALIZAR TRADUCTORES
-    # =================================================================
+    # ================================================================
     
     traductor_ingles = GoogleTranslator(
         source='es',
@@ -26,115 +146,99 @@ def recomendar_receta_por_similitud(ingredientes_espanol):
         target='es'
     )
     
-    print(f"\n[Backend] Entrada original: {ingredientes_espanol}")
-    
-    # =================================================================
-    # 2. TRADUCIR INGREDIENTES AL INGLÉS
-    # =================================================================
-    
-    ingredientes_ingles = traductor_ingles.translate(
-        ingredientes_espanol
+    print(
+        f"\n[Backend] Entrada usuario (ES): {ingredientes_usuario}"
     )
     
-    ingredientes_limpios = (
-        ingredientes_ingles
-        .replace(",", " ")
+    # ================================================================
+    # 2. TRADUCIR AL INGLÉS
+    # ================================================================
+    
+    ingredientes_ingles = (
+        traductor_ingles
+        .translate(ingredientes_usuario)
         .lower()
     )
     
-    print(f"[Backend] Traducido para el buscador: {ingredientes_limpios}")
-    
-    # =================================================================
-    # 3. CARGAR DATASET PREPROCESADO
-    # =================================================================
-    
-    (
-        X,
-        _,
-        _,
-        _,
-        tokenizer,
-        lista_recetas
-    ) = cargar_y_preprocesar_datos()
-    
-    # =================================================================
-    # 4. CONVERTIR ENTRADA DEL USUARIO A VECTOR BINARIO
-    # =================================================================
-    
-    vector_usuario = tokenizer.texts_to_matrix(
-        [ingredientes_limpios],
-        mode='binary'
-    )[0]
-    
-    # =================================================================
-    # 5. CALCULAR SIMILITUD DEL COSENO
-    # =================================================================
-    
-    # Producto punto entre usuario y todas las recetas
-    dot_product = np.dot(
-        X,
-        vector_usuario
+    print(
+        f"[Backend] Traducido (EN): {ingredientes_ingles}"
     )
     
-    # Norma de cada receta
-    norm_X = np.linalg.norm(
-        X,
-        axis=1
+    # ================================================================
+    # 3. CONVERTIR ENTRADA A VECTOR TF-IDF
+    # ================================================================
+    
+    vector_usuario = vectorizador.transform(
+        [ingredientes_ingles]
     )
     
-    # Norma del usuario
-    norm_usuario = np.linalg.norm(
-        vector_usuario
-    )
+    # ================================================================
+    # 4. CALCULAR SIMILITUDES
+    # ================================================================
     
-    # Evitar división por cero
-    if norm_usuario == 0:
-        
-        return (
-            "No se ingresaron ingredientes válidos.",
-            0
-        )
+    similitudes = cosine_similarity(
+        vector_usuario,
+        matriz_tfidf
+    ).flatten()
     
-    # Fórmula de similitud del coseno
-    similitudes = dot_product / (
-        norm_X * norm_usuario
-    )
+    # ================================================================
+    # 5. OBTENER MEJOR MATCH
+    # ================================================================
     
-    # =================================================================
-    # 6. OBTENER RECETA MÁS COMPATIBLE
-    # =================================================================
-    
-    id_mejor_receta = np.argmax(
-        similitudes
-    )
+    id_mejor_match = similitudes.argsort()[-1]
     
     porcentaje_coincidencia = (
-        similitudes[id_mejor_receta] * 100
+        similitudes[id_mejor_match] * 100
     )
     
-    receta_ganadora_ingles = (
-        lista_recetas[id_mejor_receta]
+    # ================================================================
+    # 6. VALIDAR RESULTADO
+    # ================================================================
+    
+    if porcentaje_coincidencia < 5.0:
+        
+        return (
+            "No encontré recetas compatibles.",
+            0,
+            ""
+        )
+    
+    # ================================================================
+    # 7. EXTRAER RECETA GANADORA
+    # ================================================================
+    
+    titulo_ingles = (
+        lista_titulos[id_mejor_match]
     )
     
-    # =================================================================
-    # 7. TRADUCIR RESULTADO AL ESPAÑOL
-    # =================================================================
+    receta_ingles = (
+        lista_recetas[id_mejor_match]
+    )
+    
+    # ================================================================
+    # 8. TRADUCIR RESULTADO AL ESPAÑOL
+    # ================================================================
     
     print(
-        "[Backend] Traduciendo receta compatible al español..."
+        "[Backend] Traduciendo resultado al español..."
+    )
+    
+    titulo_espanol = traductor_espanol.translate(
+        titulo_ingles
     )
     
     receta_espanol = traductor_espanol.translate(
-        receta_ganadora_ingles
+        receta_ingles
     )
     
-    # =================================================================
-    # 8. RETORNAR RESULTADO
-    # =================================================================
+    # ================================================================
+    # 9. RETORNAR RESULTADO FINAL
+    # ================================================================
     
     return (
         receta_espanol,
-        porcentaje_coincidencia
+        porcentaje_coincidencia,
+        titulo_espanol
     )
 
 
@@ -144,19 +248,63 @@ def recomendar_receta_por_similitud(ingredientes_espanol):
 
 if __name__ == "__main__":
     
-    ingredientes_prueba = (
-        "huevo, queso, cebolla"
+    # ================================================================
+    # INICIAR MOTOR SOLO UNA VEZ
+    # ================================================================
+    
+    (
+        vectorizador,
+        matriz_tfidf,
+        lista_recetas,
+        lista_titulos
+    ) = inicializar_motor_vectorial()
+    
+    # ================================================================
+    # INGREDIENTES DE PRUEBA
+    # ================================================================
+    
+    ingredientes_test = (
+        "mantequilla, harina, huevo, leche "
     )
     
-    receta, porcentaje = (
-        recomendar_receta_por_similitud(
-            ingredientes_prueba
-        )
+    # ================================================================
+    # BUSCAR RECETA
+    # ================================================================
+    
+    (
+        receta,
+        certeza,
+        titulo
+    ) = buscar_receta_optima(
+        ingredientes_test,
+        vectorizador,
+        matriz_tfidf,
+        lista_recetas,
+        lista_titulos
     )
+    
+    # ================================================================
+    # MOSTRAR RESULTADOS
+    # ================================================================
     
     print("\n" + "=" * 70)
-    print(f"🛒 Ingredientes ingresados : {ingredientes_prueba}")
-    print(f"🎯 Coincidencia IA         : {porcentaje:.2f}%")
+    
+    print(
+        f"🛒 INGREDIENTES : {ingredientes_test}"
+    )
+    
+    print(
+        f"🎯 COINCIDENCIA : {certeza:.2f}%"
+    )
+    
+    print(
+        f"🍽️ RECETA       : {titulo}"
+    )
+    
     print("-" * 70)
-    print(f"📖 Receta recomendada (ES):\n{receta}")
+    
+    print(
+        f"📖 INSTRUCCIONES:\n{receta}"
+    )
+    
     print("=" * 70 + "\n")
