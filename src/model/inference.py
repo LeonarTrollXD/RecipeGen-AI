@@ -2,56 +2,79 @@ import numpy as np
 import tensorflow as tf
 from src.model.preprocess import cargar_y_preprocesar_datos
 
-def generar_instruccion_completa(ingredientes_input, max_palabras=20):
-    # 1. Cargar modelo y tokenizer
-    modelo = tf.keras.models.load_model("models/saved_models/modelo_recetas.keras")
-    _, tokenizer, _ = cargar_y_preprocesar_datos()
+def recomendar_receta(ingredientes_input):
+    """
+    Recomienda la receta más compatible según
+    los ingredientes ingresados por el usuario.
+    """
     
-    # Invertimos el diccionario del tokenizer una sola vez antes del bucle (optimiza memoria)
-    reverse_word_map = dict(map(reversed, tokenizer.word_index.items()))
+    # =================================================================
+    # 1. CARGAR MODELO ENTRENADO
+    # =================================================================
     
-    # Esta variable acumulará todo el texto generado paso a paso
-    texto_acumulado = ingredientes_input
+    modelo = tf.keras.models.load_model(
+        "models/saved_models/modelo_recetas.keras"
+    )
     
-    print("\n[IA] Pensando y redactando la sugerencia...")
+    # =================================================================
+    # 2. CARGAR TOKENIZER Y RECETAS
+    # =================================================================
     
-    for i in range(max_palabras):
-        # 2. Procesar el texto acumulado actual
-        secuencia = tokenizer.texts_to_sequences([texto_acumulado])
-        entrada = tf.keras.preprocessing.sequence.pad_sequences(secuencia, maxlen=15, padding='post')
-        
-        # 3. Predicción (verbose=0 para que no ensucie la pantalla con barras de carga)
-        prediccion = modelo.predict(entrada, verbose=0)[0]
-        temperatura = 0.7 
-        prediccion = np.log(prediccion + 1e-7) / temperatura
-        exp_preds = np.exp(prediccion)
-        prediccion = exp_preds / np.sum(exp_preds)
-        # 4. Encontrar el índice de la palabra más probable
-        index_palabra = np.random.choice(len(prediccion), p=prediccion)
-        
-        # Si el modelo predice 0 (es el token de relleno/padding), terminamos la frase
-        if index_palabra == 0:
-            break
-            
-        # Traducir el número a palabra real
-        palabra_sugerida = reverse_word_map.get(index_palabra, "")
-        
-        # Si encuentra un token vacío o desconocido, detenemos la generación
-        if not palabra_sugerida or palabra_sugerida == "<OOV>":
-            break
-            
-        # 5. Enganchar la nueva palabra al texto que ya teníamos
-        texto_acumulado += " " + palabra_sugerida
+    # Ignoramos variables innecesarias usando "_"
+    _, _, _, _, tokenizer, lista_recetas = cargar_y_preprocesar_datos()
+    
+    # =================================================================
+    # 3. CONVERTIR TEXTO A VECTOR BINARIO
+    # =================================================================
+    
+    entrada = tokenizer.texts_to_matrix(
+        [ingredientes_input],
+        mode='binary'
+    )
+    
+    print("\n[IA] Buscando el match perfecto en la base de datos...")
+    
+    # =================================================================
+    # 4. REALIZAR PREDICCIÓN
+    # =================================================================
+    
+    prediccion = modelo.predict(
+        entrada,
+        verbose=0
+    )
+    
+    # =================================================================
+    # 5. OBTENER RECETA GANADORA
+    # =================================================================
+    
+    # Índice de la receta con mayor probabilidad
+    id_receta = np.argmax(prediccion[0])
+    
+    # Porcentaje de confianza
+    probabilidad = prediccion[0][id_receta] * 100
+    
+    # Obtener texto real de la receta
+    receta_encontrada = lista_recetas[id_receta]
+    
+    return receta_encontrada, probabilidad
 
-    return texto_acumulado
+
+# =====================================================================
+# PRUEBA DIRECTA DEL SCRIPT
+# =====================================================================
 
 if __name__ == "__main__":
-    # Puedes cambiar esta frase por los ingredientes que quieras probar
-    ingredientes_prueba = "tomates atún" 
     
-    resultado_final = generar_instruccion_completa(ingredientes_prueba, max_palabras=15)
+    # Ingredientes de prueba
+    ingredientes_prueba = "huevos"
     
-    print("\n" + "="*50)
-    print(f"Ingredientes iniciales : {ingredientes_prueba}")
-    print(f"Receta generada por IA : {resultado_final}")
-    print("="*50 + "\n")
+    receta, probabilidad = recomendar_receta(
+        ingredientes_prueba
+    )
+    
+    print("\n" + "=" * 70)
+    print(f"🛒 Ingredientes disponibles : {ingredientes_prueba}")
+    print(f"🎯 Certeza de la IA         : {probabilidad:.2f}%")
+    print("-" * 70)
+    print(f"📖 Receta recomendada       :\n{receta}")
+    print("=" * 70 + "\n")

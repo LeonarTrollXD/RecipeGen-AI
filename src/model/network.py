@@ -1,40 +1,76 @@
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
+from tensorflow.keras.layers import Dense, Dropout
 
-def crear_modelo_recetas(total_palabras, largo_maximo_entrada):
+def crear_modelo_recetas(vocab_size, num_recetas):
     """
-    Define la arquitectura de la red neuronal LSTM para generar recetas.
+    Define la arquitectura de la red neuronal para clasificar recetas
+    según los ingredientes ingresados.
     """
-    model = Sequential([
-        # 1. Capa Embedding: Convierte los números en vectores densos con significado conceptual
-        Embedding(input_dim=total_palabras, output_dim=64, input_length=largo_maximo_entrada),
+    
+    modelo = Sequential([
         
-        # 2. Capa LSTM: La memoria de la red. Analiza la secuencia de los ingredientes
-        LSTM(128, return_sequences=False), 
+        # 1. Capa de Entrada
+        # Recibe el vector binario de ingredientes
+        Dense(
+            128,
+            activation='relu',
+            input_shape=(vocab_size,)
+        ),
         
-        # 3. Capa Dropout: Apaga neuronas al azar en el entrenamiento para evitar que se memorice todo (overfitting)
+        # 2. Dropout
+        # Evita overfitting apagando neuronas aleatoriamente
+        Dropout(0.3),
+        
+        # 3. Segunda capa oculta
+        Dense(
+            64,
+            activation='relu'
+        ),
+        
+        # 4. Segundo Dropout
         Dropout(0.2),
         
-        # 4. Capa Densa de Salida: Capa final que predecirá las palabras de la receta resultante
-        # Se usa 'softmax' para obtener probabilidades de qué palabra sigue
-        Dense(total_palabras, activation='softmax')
+        # 5. Capa de SALIDA
+        # Una neurona por cada receta existente
+        # softmax convierte las salidas en probabilidades
+        Dense(
+            num_recetas,
+            activation='softmax'
+        )
     ])
     
-    # Compilamos el modelo configurando cómo va a aprender
-    model.compile(
-        loss='sparse_categorical_crossentropy', 
-        optimizer='adam', 
+    # =================================================================
+    # COMPILACIÓN DEL MODELO
+    # =================================================================
+    
+    modelo.compile(
+        optimizer='adam',
+        
+        # Ideal cuando Y son IDs enteros
+        loss='sparse_categorical_crossentropy',
+        
         metrics=['accuracy']
     )
     
-    print("¡Arquitectura de la Red Neural creada con éxito!")
-    model.summary() # Esto dibuja un mapa de la red en la terminal
-    return model
+    print("¡Arquitectura de clasificación creada con éxito!")
+    
+    # Mostrar resumen de la red
+    modelo.summary()
+    
+    return modelo
 
 
+# =====================================================================
+# PRUEBA DIRECTA DEL SCRIPT
+# =====================================================================
 
 if __name__ == "__main__":
-    # Este bloque obliga a Python a ejecutar la función al correr el archivo
+    
     print("Iniciando prueba de la red neuronal...")
-    crear_modelo_recetas(total_palabras=100, largo_maximo_entrada=5)
+    
+    # Ejemplo de prueba
+    modelo = crear_modelo_recetas(
+        vocab_size=500,
+        num_recetas=183
+    )
