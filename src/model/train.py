@@ -69,7 +69,7 @@ def entrenar_modelo():
         epochs=200,
         
         # Cantidad de muestras por lote
-        batch_size=4,
+        batch_size=64,
         
         # Callback para guardar el mejor modelo
         callbacks=[checkpoint]

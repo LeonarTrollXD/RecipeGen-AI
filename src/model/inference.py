@@ -1,62 +1,141 @@
 import numpy as np
-import tensorflow as tf
+from deep_translator import GoogleTranslator
+
 from src.model.preprocess import cargar_y_preprocesar_datos
 
-def recomendar_receta(ingredientes_input):
+
+def recomendar_receta_por_similitud(ingredientes_espanol):
     """
-    Recomienda la receta más compatible según
-    los ingredientes ingresados por el usuario.
+    Traduce ingredientes del español al inglés,
+    busca la receta más compatible mediante
+    similitud del coseno y traduce el resultado
+    nuevamente al español.
     """
     
     # =================================================================
-    # 1. CARGAR MODELO ENTRENADO
+    # 1. INICIALIZAR TRADUCTORES
     # =================================================================
     
-    modelo = tf.keras.models.load_model(
-        "models/saved_models/modelo_recetas.keras"
+    traductor_ingles = GoogleTranslator(
+        source='es',
+        target='en'
     )
     
+    traductor_espanol = GoogleTranslator(
+        source='en',
+        target='es'
+    )
+    
+    print(f"\n[Backend] Entrada original: {ingredientes_espanol}")
+    
     # =================================================================
-    # 2. CARGAR TOKENIZER Y RECETAS
+    # 2. TRADUCIR INGREDIENTES AL INGLÉS
     # =================================================================
     
-    # Ignoramos variables innecesarias usando "_"
-    _, _, _, _, tokenizer, lista_recetas = cargar_y_preprocesar_datos()
+    ingredientes_ingles = traductor_ingles.translate(
+        ingredientes_espanol
+    )
+    
+    ingredientes_limpios = (
+        ingredientes_ingles
+        .replace(",", " ")
+        .lower()
+    )
+    
+    print(f"[Backend] Traducido para el buscador: {ingredientes_limpios}")
     
     # =================================================================
-    # 3. CONVERTIR TEXTO A VECTOR BINARIO
+    # 3. CARGAR DATASET PREPROCESADO
     # =================================================================
     
-    entrada = tokenizer.texts_to_matrix(
-        [ingredientes_input],
+    (
+        X,
+        _,
+        _,
+        _,
+        tokenizer,
+        lista_recetas
+    ) = cargar_y_preprocesar_datos()
+    
+    # =================================================================
+    # 4. CONVERTIR ENTRADA DEL USUARIO A VECTOR BINARIO
+    # =================================================================
+    
+    vector_usuario = tokenizer.texts_to_matrix(
+        [ingredientes_limpios],
         mode='binary'
+    )[0]
+    
+    # =================================================================
+    # 5. CALCULAR SIMILITUD DEL COSENO
+    # =================================================================
+    
+    # Producto punto entre usuario y todas las recetas
+    dot_product = np.dot(
+        X,
+        vector_usuario
     )
     
-    print("\n[IA] Buscando el match perfecto en la base de datos...")
+    # Norma de cada receta
+    norm_X = np.linalg.norm(
+        X,
+        axis=1
+    )
     
-    # =================================================================
-    # 4. REALIZAR PREDICCIÓN
-    # =================================================================
+    # Norma del usuario
+    norm_usuario = np.linalg.norm(
+        vector_usuario
+    )
     
-    prediccion = modelo.predict(
-        entrada,
-        verbose=0
+    # Evitar división por cero
+    if norm_usuario == 0:
+        
+        return (
+            "No se ingresaron ingredientes válidos.",
+            0
+        )
+    
+    # Fórmula de similitud del coseno
+    similitudes = dot_product / (
+        norm_X * norm_usuario
     )
     
     # =================================================================
-    # 5. OBTENER RECETA GANADORA
+    # 6. OBTENER RECETA MÁS COMPATIBLE
     # =================================================================
     
-    # Índice de la receta con mayor probabilidad
-    id_receta = np.argmax(prediccion[0])
+    id_mejor_receta = np.argmax(
+        similitudes
+    )
     
-    # Porcentaje de confianza
-    probabilidad = prediccion[0][id_receta] * 100
+    porcentaje_coincidencia = (
+        similitudes[id_mejor_receta] * 100
+    )
     
-    # Obtener texto real de la receta
-    receta_encontrada = lista_recetas[id_receta]
+    receta_ganadora_ingles = (
+        lista_recetas[id_mejor_receta]
+    )
     
-    return receta_encontrada, probabilidad
+    # =================================================================
+    # 7. TRADUCIR RESULTADO AL ESPAÑOL
+    # =================================================================
+    
+    print(
+        "[Backend] Traduciendo receta compatible al español..."
+    )
+    
+    receta_espanol = traductor_espanol.translate(
+        receta_ganadora_ingles
+    )
+    
+    # =================================================================
+    # 8. RETORNAR RESULTADO
+    # =================================================================
+    
+    return (
+        receta_espanol,
+        porcentaje_coincidencia
+    )
 
 
 # =====================================================================
@@ -65,16 +144,19 @@ def recomendar_receta(ingredientes_input):
 
 if __name__ == "__main__":
     
-    # Ingredientes de prueba
-    ingredientes_prueba = "huevos"
+    ingredientes_prueba = (
+        "huevo, queso, cebolla"
+    )
     
-    receta, probabilidad = recomendar_receta(
-        ingredientes_prueba
+    receta, porcentaje = (
+        recomendar_receta_por_similitud(
+            ingredientes_prueba
+        )
     )
     
     print("\n" + "=" * 70)
-    print(f"🛒 Ingredientes disponibles : {ingredientes_prueba}")
-    print(f"🎯 Certeza de la IA         : {probabilidad:.2f}%")
+    print(f"🛒 Ingredientes ingresados : {ingredientes_prueba}")
+    print(f"🎯 Coincidencia IA         : {porcentaje:.2f}%")
     print("-" * 70)
-    print(f"📖 Receta recomendada       :\n{receta}")
+    print(f"📖 Receta recomendada (ES):\n{receta}")
     print("=" * 70 + "\n")
