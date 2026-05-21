@@ -264,7 +264,7 @@ if __name__ == "__main__":
     # ================================================================
     
     ingredientes_test = (
-        "mantequilla, harina, huevo, leche "
+        "pan, carne molida, tomate, cebolla, queso"
     )
     
     # ================================================================

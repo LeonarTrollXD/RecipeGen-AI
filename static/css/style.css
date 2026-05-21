@@ -1,0 +1,561 @@
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* Fondo animado con partículas */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 50% 80%, rgba(56, 239, 125, 0.05) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .container {
+        background: rgba(20, 20, 35, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 30px;
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.5),
+            0 0 100px rgba(102, 126, 234, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        max-width: 850px;
+        width: 100%;
+        padding: 50px;
+        position: relative;
+        z-index: 1;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Efecto de brillo en el borde */
+    .container::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #667eea, #764ba2, #38ef7d, #667eea);
+        border-radius: 32px;
+        z-index: -1;
+        opacity: 0.3;
+        filter: blur(10px);
+    }
+
+    header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    header h1 {
+        font-size: 3em;
+        background: linear-gradient(135deg, #667eea, #764ba2, #38ef7d);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+        font-weight: 700;
+        letter-spacing: -1px;
+    }
+
+    .subtitle {
+        color: #a0a0b8;
+        font-size: 1.2em;
+        font-weight: 300;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .search-box {
+        margin-bottom: 30px;
+        position: relative;
+    }
+
+    .search-box label {
+        display: block;
+        margin-bottom: 15px;
+        color: #e0e0f0;
+        font-weight: 500;
+        font-size: 1.1em;
+        letter-spacing: 0.5px;
+    }
+
+    .input-group {
+        display: flex;
+        gap: 15px;
+        position: relative;
+    }
+
+    /* Efecto de glow en el input */
+    .input-group::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border-radius: 15px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: -1;
+    }
+
+    .input-group:focus-within::before {
+        opacity: 0.5;
+    }
+
+    #ingredients {
+        flex: 1;
+        padding: 18px 25px;
+        background: rgba(30, 30, 50, 0.8);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        font-size: 16px;
+        font-family: 'Poppins', sans-serif;
+        color: #ffffff;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    #ingredients::placeholder {
+        color: #6a6a8a;
+    }
+
+    #ingredients:focus {
+        outline: none;
+        border-color: #667eea;
+        background: rgba(40, 40, 60, 0.9);
+        box-shadow: 0 0 30px rgba(102, 126, 234, 0.2);
+    }
+
+    #search-btn {
+        padding: 18px 35px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 15px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        position: relative;
+        overflow: hidden;
+        letter-spacing: 0.5px;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    #search-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    #search-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+    }
+
+    #search-btn:hover::before {
+        left: 100%;
+    }
+
+    #search-btn:active {
+        transform: translateY(-1px);
+    }
+
+    #search-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .hint {
+        display: block;
+        margin-top: 12px;
+        color: #6a6a8a;
+        font-size: 0.9em;
+        font-style: italic;
+    }
+
+    .quick-ingredients {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .quick-ingredients small {
+        width: 100%;
+        color: #7a7a9a;
+        margin-bottom: 5px;
+        font-size: 0.85em;
+    }
+
+    .quick-ingredient-btn {
+        background: rgba(102, 126, 234, 0.1);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        padding: 10px 18px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 0.9em;
+        transition: all 0.3s ease;
+        font-family: 'Poppins', sans-serif;
+        color: #b0b0d0;
+        backdrop-filter: blur(5px);
+    }
+
+    .quick-ingredient-btn:hover {
+        background: rgba(102, 126, 234, 0.3);
+        border-color: #667eea;
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+    }
+
+    .loading {
+        text-align: center;
+        padding: 50px;
+        display: none;
+    }
+
+    .spinner {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 25px;
+        position: relative;
+    }
+
+    .spinner::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        border-top-color: #667eea;
+        border-right-color: #764ba2;
+        animation: spin 1s linear infinite;
+    }
+
+    .spinner::after {
+        content: '';
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        border-bottom-color: #38ef7d;
+        border-left-color: #38ef7d;
+        animation: spin 1.5s linear infinite reverse;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .loading p {
+        color: #a0a0b8;
+        font-size: 1.1em;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
+    }
+
+    .result-card {
+        background: rgba(30, 30, 50, 0.6);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 35px;
+        margin-top: 25px;
+        display: none;
+        animation: slideIn 0.5s ease-out;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .recipe-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 25px;
+        padding-bottom: 25px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    #recipe-name {
+        color: #ffffff;
+        font-size: 1.8em;
+        font-weight: 600;
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .match-badge {
+        color: white;
+        padding: 12px 25px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.95em;
+        letter-spacing: 0.5px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        white-space: nowrap;
+    }
+
+    .match-badge.high {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        box-shadow: 0 10px 30px rgba(56, 239, 125, 0.3);
+    }
+
+    .match-badge.medium {
+        background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+        box-shadow: 0 10px 30px rgba(242, 201, 76, 0.3);
+    }
+
+    .match-badge.low {
+        background: linear-gradient(135deg, #eb5757 0%, #d59153 100%);
+        box-shadow: 0 10px 30px rgba(235, 87, 87, 0.3);
+    }
+
+    .ingredients-used {
+        margin-bottom: 30px;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 15px;
+        border-left: 4px solid #667eea;
+    }
+
+    .ingredients-used h3,
+    .instructions h3 {
+        color: #b0b0d0;
+        margin-bottom: 15px;
+        font-size: 1.2em;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    #ingredients-list {
+        color: #e0e0f0;
+        font-size: 1.1em;
+        line-height: 1.6;
+    }
+
+    #instructions-text {
+        color: #c0c0d0;
+        line-height: 2;
+    }
+
+    #instructions-text p {
+        margin-bottom: 15px;
+        padding: 15px 20px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        border-left: 3px solid rgba(102, 126, 234, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    #instructions-text p:hover {
+        background: rgba(102, 126, 234, 0.1);
+        border-left-color: #667eea;
+        transform: translateX(5px);
+    }
+
+    #instructions-text strong {
+        color: #667eea;
+        margin-right: 10px;
+        font-size: 1.1em;
+    }
+
+    .error-message {
+        background: rgba(235, 87, 87, 0.1);
+        border: 1px solid rgba(235, 87, 87, 0.3);
+        color: #ff6b6b;
+        padding: 20px 25px;
+        border-radius: 15px;
+        margin-top: 20px;
+        border-left: 4px solid #eb5757;
+        display: none;
+        backdrop-filter: blur(10px);
+        animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+
+    .copy-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(102, 126, 234, 0.2);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        color: #b0b0d0;
+        padding: 12px 25px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95em;
+        margin-top: 25px;
+        transition: all 0.3s ease;
+    }
+
+    .copy-btn:hover {
+        background: rgba(102, 126, 234, 0.4);
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+    }
+
+    footer {
+        text-align: center;
+        margin-top: 50px;
+        padding-top: 30px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    footer p {
+        color: #5a5a7a;
+        font-size: 0.9em;
+        letter-spacing: 1px;
+    }
+
+    footer span {
+        color: #667eea;
+    }
+
+    /* Scrollbar personalizada */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 10px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .container {
+            padding: 30px 20px;
+            border-radius: 20px;
+        }
+
+        header h1 {
+            font-size: 2.2em;
+        }
+
+        .input-group {
+            flex-direction: column;
+        }
+
+        #search-btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        .recipe-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        #recipe-name {
+            font-size: 1.4em;
+        }
+
+        .match-badge {
+            font-size: 0.85em;
+            padding: 10px 20px;
+        }
+
+        .quick-ingredients {
+            gap: 8px;
+        }
+
+        .quick-ingredient-btn {
+            font-size: 0.8em;
+            padding: 8px 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .container {
+            padding: 20px 15px;
+        }
+
+        header h1 {
+            font-size: 1.8em;
+        }
+
+        .subtitle {
+            font-size: 0.9em;
+        }
+
+        #instructions-text p {
+            padding: 10px 15px;
+            font-size: 0.9em;
+        }
+    }

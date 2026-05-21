@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecipeGen AI - Generador de Recetas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍳 RecipeGen AI</h1>
+            <p class="subtitle">Tu asistente culinario inteligente</p>
+        </header>
+
+        <main>
+            <div class="search-box">
+                <label for="ingredients">Ingresa tus ingredientes:</label>
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="ingredients" 
+                        placeholder="Ej: pasta, tomate, albahaca, ajo, aceite de oliva"
+                        autocomplete="off"
+                    >
+                    <button onclick="getRecipe()" id="search-btn">
+                        <span>🔍</span> Buscar Receta
+                    </button>
+                </div>
+                <small class="hint">Separa los ingredientes con comas</small>
+            </div>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Buscando la receta perfecta...</p>
+            </div>
+
+            <div id="result" class="result-card" style="display: none;">
+                <div class="recipe-header">
+                    <h2 id="recipe-name"></h2>
+                    <span class="match-badge" id="match-percentage"></span>
+                </div>
+                
+                <div class="ingredients-used">
+                    <h3>🛒 Ingredientes utilizados:</h3>
+                    <p id="ingredients-list"></p>
+                </div>
+
+                <div class="instructions">
+                    <h3>📖 Instrucciones:</h3>
+                    <div id="instructions-text"></div>
+                </div>
+            </div>
+
+            <div id="error" class="error-message" style="display: none;"></div>
+        </main>
+
+        <footer>
+            <p>✨ Creado con IA • Encuentra recetas con lo que tienes en casa</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
